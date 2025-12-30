@@ -1,0 +1,37 @@
+[
+  {
+    "id": "B002",
+    "branchno": "B002",
+    "street": "56 Cover Drive",
+    "city": "London",
+    "postcode": "NW10 6EU"
+  },
+  {
+    "id": "B003",
+    "branchno": "B003",
+    "street": "163 Main Street",
+    "city": "Glasgow",
+    "postcode": "G11 9QX"
+  },
+  {
+    "id": "B004",
+    "branchno": "B004",
+    "street": "32 Manse Road",
+    "city": "Bristol",
+    "postcode": "BS99 1NZ"
+  },
+  {
+    "id": "B005",
+    "branchno": "B005",
+    "street": "22 Deer Road",
+    "city": "London",
+    "postcode": "SW1 4EH"
+  },
+  {
+    "id": "B007",
+    "branchno": "B007",
+    "street": "16 Argyll Street",
+    "city": "Aberdeen",
+    "postcode": "AB2 3SU"
+  }
+]

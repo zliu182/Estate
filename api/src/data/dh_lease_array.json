@@ -1,0 +1,47 @@
+[
+  {
+    "id": "1",
+    "leaseno": 1,
+    "clientno": "CR55",
+    "propertyno": "PG16",
+    "leaseamount": 550,
+    "lease_start": "2005-12-22",
+    "lease_end": "2007-12-22"
+  },
+  {
+    "id": "2",
+    "leaseno": 2,
+    "clientno": "CR62",
+    "propertyno": "PG21",
+    "leaseamount": 580,
+    "lease_start": "2006-11-22",
+    "lease_end": "2007-10-22"
+  },
+  {
+    "id": "3",
+    "leaseno": 3,
+    "clientno": "CR90",
+    "propertyno": "PG36",
+    "leaseamount": 620,
+    "lease_start": "2003-10-22",
+    "lease_end": "2007-11-22"
+  },
+  {
+    "id": "4",
+    "leaseno": 4,
+    "clientno": "CR64",
+    "propertyno": "PG36",
+    "leaseamount": 800,
+    "lease_start": "2002-12-22",
+    "lease_end": "2005-09-22"
+  },
+  {
+    "id": "5",
+    "leaseno": 5,
+    "clientno": "CR83",
+    "propertyno": "PL94",
+    "leaseamount": 7500,
+    "lease_start": "2008-08-22",
+    "lease_end": "2009-12-22"
+  }
+]

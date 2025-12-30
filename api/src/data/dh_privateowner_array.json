@@ -1,0 +1,72 @@
+[
+  {
+    "id": "CO46",
+    "ownerno": "CO46",
+    "fname": "Jonathan",
+    "lname": "Donaway",
+    "address": "Abbey street",
+    "telno": "99095559",
+    "email": "jd@gmail.com",
+    "password": "1111"
+  },
+  {
+    "id": "CO93",
+    "ownerno": "CO93",
+    "fname": "Janet",
+    "lname": "Duncan",
+    "address": "Abbey street",
+    "telno": "99095559",
+    "email": "jd@gmail.com",
+    "password": "1111"
+  },
+  {
+    "id": "CO87",
+    "ownerno": "CO87",
+    "fname": "Bobby",
+    "lname": "Gilles",
+    "address": "35 Abbey street",
+    "telno": "97095559",
+    "email": "bg@gmail.com",
+    "password": "1111"
+  },
+  {
+    "id": "CO40",
+    "ownerno": "CO40",
+    "fname": "Gillan",
+    "lname": "Moneskun",
+    "address": "44 Balder street",
+    "telno": "99095559",
+    "email": "gm@gmail.com",
+    "password": "1111"
+  },
+  {
+    "id": "CO66",
+    "ownerno": "CO66",
+    "fname": "Samantha",
+    "lname": "Kirk",
+    "address": "34 King street",
+    "telno": "99095559",
+    "email": "sk@gmail.com",
+    "password": "1111"
+  },
+  {
+    "id": "CO73",
+    "ownerno": "CO73",
+    "fname": "Bruce",
+    "lname": "Willes",
+    "address": "56 Bogdan street",
+    "telno": "99095559",
+    "email": "bw@gmail.com",
+    "password": "1111"
+  },
+  {
+    "id": "CO77",
+    "ownerno": "CO77",
+    "fname": "Giselle",
+    "lname": "Bunchen",
+    "address": "45 Queen Abbey street",
+    "telno": "99095559",
+    "email": "jd@gmail.com",
+    "password": "1111"
+  }
+]

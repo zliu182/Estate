@@ -1,0 +1,93 @@
+[
+  {
+    "id": "CR62_PA14",
+    "clientno": "CR62",
+    "propertyno": "PA14",
+    "viewdate": "2004-07-01",
+    "comments": null
+  },
+  {
+    "id": "CR74_PG36",
+    "clientno": "CR74",
+    "propertyno": "PG36",
+    "viewdate": "2004-07-01",
+    "comments": null
+  },
+  {
+    "id": "CR74_PG4",
+    "clientno": "CR74",
+    "propertyno": "PG4",
+    "viewdate": "2004-07-01",
+    "comments": "Tidy but too small"
+  },
+  {
+    "id": "CR83_PA14",
+    "clientno": "CR83",
+    "propertyno": "PA14",
+    "viewdate": "2004-07-02",
+    "comments": null
+  },
+  {
+    "id": "CR83_PG4",
+    "clientno": "CR83",
+    "propertyno": "PG4",
+    "viewdate": "2004-07-02",
+    "comments": null
+  },
+  {
+    "id": "CR55_PA14",
+    "clientno": "CR55",
+    "propertyno": "PA14",
+    "viewdate": "2004-06-20",
+    "comments": "size ok but location is not good"
+  },
+  {
+    "id": "CR55_PG21",
+    "clientno": "CR55",
+    "propertyno": "PG21",
+    "viewdate": "2004-06-21",
+    "comments": null
+  },
+  {
+    "id": "CR64_PA14",
+    "clientno": "CR64",
+    "propertyno": "PA14",
+    "viewdate": "2004-06-20",
+    "comments": null
+  },
+  {
+    "id": "CR64_PG21",
+    "clientno": "CR64",
+    "propertyno": "PG21",
+    "viewdate": "2004-11-22",
+    "comments": "Not that bad"
+  },
+  {
+    "id": "CR64_PG36",
+    "clientno": "CR64",
+    "propertyno": "PG36",
+    "viewdate": "2004-11-23",
+    "comments": "Kitchen is too small."
+  },
+  {
+    "id": "CR34_PG16",
+    "clientno": "CR34",
+    "propertyno": "PG16",
+    "viewdate": "2004-11-23",
+    "comments": null
+  },
+  {
+    "id": "CR90_PG21",
+    "clientno": "CR90",
+    "propertyno": "PG21",
+    "viewdate": "2004-11-25",
+    "comments": null
+  },
+  {
+    "id": "CR90_PG4",
+    "clientno": "CR90",
+    "propertyno": "PG4",
+    "viewdate": "2024-12-30",
+    "comments": "rooms are too small"
+  }
+]

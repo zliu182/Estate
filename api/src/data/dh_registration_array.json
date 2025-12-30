@@ -1,0 +1,30 @@
+[
+  {
+    "id": "CR62_B002",
+    "clientno": "CR62",
+    "branchno": "B002",
+    "staffno": "SA9",
+    "dateregister": "2004-11-22"
+  },
+  {
+    "id": "CR55_B003",
+    "clientno": "CR55",
+    "branchno": "B003",
+    "staffno": "SL21",
+    "dateregister": "2006-11-22"
+  },
+  {
+    "id": "CR62_B004",
+    "clientno": "CR62",
+    "branchno": "B004",
+    "staffno": "SG37",
+    "dateregister": "2005-11-22"
+  },
+  {
+    "id": "CR90_B004",
+    "clientno": "CR90",
+    "branchno": "B004",
+    "staffno": "SL21",
+    "dateregister": "2005-12-22"
+  }
+]
