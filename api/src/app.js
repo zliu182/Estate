@@ -9,13 +9,6 @@ const port = 3001
 app.use(express.json())
 app.use(cors()) // Pass cors function
 
-// Database connection configuration
-const dbConfig = {
-  user: 'dbs501_243v1a09',
-  password: '19131160',
-  connectString: 'myoracle12c.senecacollege.ca:1521/oracle12c',
-}
-
 // Simulated in-memory hash-map for staff lookup
 let staffHashMap = new Map()
 
