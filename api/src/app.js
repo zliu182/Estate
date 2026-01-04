@@ -1,109 +1,141 @@
-const oracledb = require('oracledb')
-const express = require('express')
-const cors = require('cors')
+import express, { Request, Response } from 'express';
+import cors from 'cors';
 
-const app = express()
-const port = 3001
+const app = express();
+const port = 3001;
 
-// Middleware to parse JSON request bodies
-app.use(express.json())
-app.use(cors()) // Pass cors function
+// Middleware
+app.use(express.json());
+app.use(cors());
 
-// Simulated in-memory hash-map for staff lookup
-let staffHashMap = new Map()
+// In-memory hash-map for staff lookup
+const staffHashMap = new Map<string, StaffData>();
+
+// Database Configuration (you'll need to provide your actual config)
+const dbConfig: DBConfig = {
+  user: process.env.DB_USER || 'your_user',
+  password: process.env.DB_PASSWORD || 'your_password',
+  connectString: process.env.DB_CONNECT_STRING || 'your_connect_string',
+};
 
 // Function to populate staff hash-map
-async function populateStaffHashMap() {
+async function populateStaffHashMap(): Promise<void> {
   try {
-    const query = 'SELECT staffno, salary, telephone, email FROM dh_staff'
-    const result = await executeQuery(query)
+    const query = 'SELECT staffno, salary, telephone, email FROM dh_staff';
+    const result = await executeQuery(query);
 
-    staffHashMap.clear()
-    result.rows.forEach((row) => {
-      const [staffno, salary, telephone, email] = row
-      staffHashMap.set(staffno, { salary, telephone, email })
-    })
+    staffHashMap.clear();
+    result.rows.forEach((row: any[]) => {
+      const [staffno, salary, telephone, email] = row;
+      staffHashMap.set(staffno, { salary, telephone, email });
+    });
 
-    console.log('Staff hash-map populated successfully!')
+    console.log('Staff hash-map populated successfully!');
   } catch (err) {
-    console.error('Error populating staff hash-map:', err)
+    console.error('Error populating staff hash-map:', err);
   }
 }
 
 // Function to execute queries
-async function executeQuery(query, binds = {}, options = {}) {
-  let connection
+async function executeQuery(
+  query: string,
+  binds: oracledb.BindParameters = {},
+  options: oracledb.ExecuteOptions = {}
+): Promise<QueryResult> {
+  let connection: oracledb.Connection | undefined;
 
   try {
-    connection = await oracledb.getConnection(dbConfig)
-    const result = await connection.execute(query, binds, options)
-    await connection.commit() // Ensure to update in the database
-    return result
+    connection = await oracledb.getConnection(dbConfig);
+    const result = await connection.execute(query, binds, options);
+    await connection.commit();
+    return result as QueryResult;
   } catch (err) {
-    throw err
+    throw err;
   } finally {
     if (connection) {
       try {
-        await connection.close()
+        await connection.close();
       } catch (err) {
-        console.error('Error closing connection:', err)
+        console.error('Error closing connection:', err);
       }
     }
   }
 }
 
 // Main page route
-app.get('/', (req, res) => {
-  res.send('Welcome to the main page!')
-})
+app.get('/', (req: Request, res: Response) => {
+  res.send('Welcome to the main page!');
+});
 
-// GET method for retrieving all staff records
-app.get('/staff', async (req, res) => {
+// ============================================================
+// STAFF ENDPOINTS - POST ONLY
+// ============================================================
+
+app.post('/staff', async (req: Request, res: Response) => {
+  const { action } = req.body;
+
   try {
-    const query = 'SELECT * FROM dh_staff'
-    const result = await executeQuery(query)
-
-    const columnNames = [
-      'staff_id',
-      'first_name',
-      'last_name',
-      'position',
-      'gender',
-      'dob',
-      'salary',
-      'branch_id',
-      'telephone_ext',
-      'mobile_number',
-      'email',
-    ]
-
-    const jsonResult = result.rows.map((row) => {
-      return columnNames.reduce((obj, col, index) => {
-        obj[col] = row[index]
-        return obj
-      }, {})
-    })
-
-    res.json(jsonResult) // Sends the staff data as JSON
+    switch (action) {
+      case 'getAll':
+        await handleGetAllStaff(req, res);
+        break;
+      case 'create':
+        await handleCreateStaff(req, res);
+        break;
+      case 'update':
+        await handleUpdateStaff(req, res);
+        break;
+      default:
+        res.status(400).json({ message: 'Invalid action. Use: getAll, create, update' });
+    }
   } catch (err) {
-    res.status(500).send('Error retrieving staff data')
+    console.error('Error in staff endpoint:', err);
+    res.status(500).json({ message: 'Internal server error' });
   }
-})
+});
 
-app.post('/staff', async (req, res) => {
+async function handleGetAllStaff(req: Request, res: Response): Promise<void> {
+  const query = 'SELECT * FROM dh_staff';
+  const result = await executeQuery(query);
+
+  const columnNames: (keyof StaffRecord)[] = [
+    'staff_id',
+    'first_name',
+    'last_name',
+    'position',
+    'gender',
+    'dob',
+    'salary',
+    'branch_id',
+    'telephone_ext',
+    'mobile_number',
+    'email',
+  ];
+
+  const jsonResult: StaffRecord[] = result.rows.map((row: any[]) => {
+    return columnNames.reduce((obj: any, col, index) => {
+      obj[col] = row[index];
+      return obj;
+    }, {} as StaffRecord);
+  });
+
+  res.json(jsonResult);
+}
+
+async function handleCreateStaff(req: Request, res: Response): Promise<void> {
   const {
     staffno,
     fname,
     lname,
     position,
     sex,
-    dob, // Ensure dob is a valid date string
+    dob,
     salary,
     branchno,
     telephone,
     mobile,
     email,
-  } = req.body
+  } = req.body;
 
   // Validate input
   if (
@@ -119,7 +151,8 @@ app.post('/staff', async (req, res) => {
     !mobile ||
     !email
   ) {
-    return res.status(400).send('All fields are required')
+    res.status(400).send('All fields are required');
+    return;
   }
 
   const newStaff = {
@@ -134,306 +167,263 @@ app.post('/staff', async (req, res) => {
     telephone,
     mobile,
     email,
-  }
+  };
 
   try {
-    // Check if branchno exists in the parent table (assuming it's 'dh_branch' table)
-    const checkBranchQuery = `SELECT branchno FROM dh_branch WHERE branchno = :branchno`
+    // Check if branchno exists
+    const checkBranchQuery = `SELECT branchno FROM dh_branch WHERE branchno = :branchno`;
+    const result = await executeQuery(checkBranchQuery, { branchno });
 
-    console.log('Executing branch check query with branchno:', branchno) // Log the branchno being used
-    const result = await executeQuery(checkBranchQuery, { branchno })
-    console.log('Branch check result:', result) // Log the result of the query
-
-    // Ensure result is valid before accessing the count
-    if (!result || result.length === 0) {
-      console.log('Branch not found.')
-      return res.status(400).send('The branch does not exist.')
+    if (!result || result.rows.length === 0) {
+      res.status(400).send('The branch does not exist.');
+      return;
     }
 
-    // SQL query to insert into the dh_staff table directly
+    // Insert staff record
     const query = `
       BEGIN
-        INSERT INTO dh_staff ( -- Insert a new staff record into the dh_staff table
-            staffno,
-            fname,
-            lname,
-            position,
-            sex,
-            dob,
-            salary,
-            branchno,
-            telephone,
-            mobile,
-            email
+        INSERT INTO dh_staff (
+            staffno, fname, lname, position, sex, dob, salary,
+            branchno, telephone, mobile, email
         ) VALUES (
-            :staffno,
-            :fname,
-            :lname,
-            :position,
-            :sex,
-            TO_DATE(:dob, 'YYYY-MM-DD'),
-            :salary,
-            :branchno,
-            :telephone,
-            :mobile,
-            :email
+            :staffno, :fname, :lname, :position, :sex,
+            TO_DATE(:dob, 'YYYY-MM-DD'), :salary,
+            :branchno, :telephone, :mobile, :email
         );
-        COMMIT; -- Commit the transaction
+        COMMIT;
       END;
-    `
+    `;
 
-    // Bind values to the placeholders in the SQL query
     const binds = {
-      staffno: staffno,
-      fname: fname,
-      lname: lname,
-      position: position,
-      sex: sex,
-      dob: new Date(dob).toISOString().split('T')[0], // Convert date to 'YYYY-MM-DD' format
+      staffno,
+      fname,
+      lname,
+      position,
+      sex,
+      dob: new Date(dob).toISOString().split('T')[0],
       salary: salary || null,
-      branchno: branchno, // Matching placeholder :branchno
+      branchno,
       telephone: telephone || null,
       mobile: mobile || null,
       email: email || null,
-    }
+    };
 
-    // Pass the binds object to the executeQuery function
-    await executeQuery(query, binds)
+    await executeQuery(query, binds);
 
     res.status(201).json({
-      message: 'New staff hired successfully and record inserted into dh_staff',
+      message: 'New staff hired successfully',
       staff: newStaff,
-    })
-  } catch (err) {
-    console.error('Error hiring staff:', err.message)
+    });
+  } catch (err: any) {
+    console.error('Error hiring staff:', err.message);
 
     if (err.message.includes('unique constraint')) {
-      res.status(409).send('Staff already exists')
+      res.status(409).send('Staff already exists');
     } else {
-      res.status(500).send('Error hiring staff')
+      res.status(500).send('Error hiring staff');
     }
   }
-})
+}
 
-// PUT method to update staff information
-app.put('/staff', async (req, res) => {
-  const { staffNo, position, salary, telephone, email } = req.body
+async function handleUpdateStaff(req: Request, res: Response): Promise<void> {
+  const { staffNo, position, salary, telephone, email } = req.body;
 
   if (!staffNo) {
-    return res.status(400).send('Staff number is required')
+    res.status(400).send('Staff number is required');
+    return;
   }
 
   if (!staffHashMap.has(staffNo)) {
-    return res.status(404).send(`Staff number ${staffNo} not found`)
+    res.status(404).send(`Staff number ${staffNo} not found`);
+    return;
   }
 
-  try {
-    const query = `  BEGIN
-        UPDATE dh_staff
-        SET
-          salary = :p_salary,
-          telephone = :p_telephone,
-          email = :p_email,
-          position = :p_position
-        WHERE staffno = :p_staffno;
+  const query = `
+    BEGIN
+      UPDATE dh_staff
+      SET
+        salary = :p_salary,
+        telephone = :p_telephone,
+        email = :p_email,
+        position = :p_position
+      WHERE staffno = :p_staffno;
+      COMMIT;
+    END;
+  `;
 
-        COMMIT;
-      END;`
-    const binds = {
-      p_staffno: staffNo,
-      p_salary: salary || null,
-      p_telephone: telephone || null,
-      p_email: email || null,
-      p_position: position || null,
+  const binds = {
+    p_staffno: staffNo,
+    p_salary: salary || null,
+    p_telephone: telephone || null,
+    p_email: email || null,
+    p_position: position || null,
+  };
+
+  await executeQuery(query, binds);
+
+  // Update in-memory hash-map
+  const updatedStaff = staffHashMap.get(staffNo)!;
+  if (salary) updatedStaff.salary = salary;
+  if (telephone) updatedStaff.telephone = telephone;
+  if (email) updatedStaff.email = email;
+
+  staffHashMap.set(staffNo, updatedStaff);
+
+  res.json([updatedStaff]);
+}
+
+// ============================================================
+// BRANCH ENDPOINTS - POST ONLY
+// ============================================================
+
+app.post('/branch', async (req: Request, res: Response) => {
+  const { action } = req.body;
+
+  try {
+    switch (action) {
+      case 'getAll':
+        await handleGetAllBranches(req, res);
+        break;
+      case 'getOne':
+        await handleGetOneBranch(req, res);
+        break;
+      case 'create':
+        await handleCreateBranch(req, res);
+        break;
+      case 'update':
+        await handleUpdateBranch(req, res);
+        break;
+      default:
+        res.status(400).json({ message: 'Invalid action. Use: getAll, getOne, create, update' });
     }
-
-    await executeQuery(query, binds)
-
-    // Update in-memory hash-map
-    const updatedStaff = staffHashMap.get(staffNo)
-    if (salary) updatedStaff.salary = salary
-    if (telephone) updatedStaff.telephone = telephone
-    if (email) updatedStaff.email = email
-
-    staffHashMap.set(staffNo, updatedStaff)
-
-    // Send back the updated staff data in an array format
-    res.json([updatedStaff]) // Return the updated staff info as an array
   } catch (err) {
-    console.error(err)
-    res.status(500).send('Error updating staff information')
+    console.error('Error in branch endpoint:', err);
+    res.status(500).json({ message: 'Internal server error' });
   }
-})
+});
 
-app.get('/branch', async (req, res) => {
-  try {
-    const query = 'SELECT branchno, street, city, postcode FROM dh_branch' // Explicitly select the relevant columns
-    const result = await executeQuery(query)
+async function handleGetAllBranches(req: Request, res: Response): Promise<void> {
+  const query = 'SELECT branchno, street, city, postcode FROM dh_branch';
+  const result = await executeQuery(query);
 
-    const columnNames = ['branch_no', 'street', 'city', 'postal_code']
+  const jsonResult: BranchRecord[] = result.rows.map((row: any[]) => ({
+    branch_no: row[0],
+    street: row[1],
+    city: row[2],
+    postal_code: row[3],
+  }));
 
-    const jsonResult = result.rows.map((row) => {
-      return {
-        branch_no: row[0], // Maps branchno -> branch_no
-        street: row[1], // Maps street -> street
-        city: row[2], // Maps city -> city
-        postal_code: row[3], // Maps postcode -> postal_code
-      }
-    })
+  res.json(jsonResult);
+}
 
-    res.json(jsonResult) // Sends the branch data as JSON
-  } catch (err) {
-    console.error('Error retrieving branch data:', err.message) // Log the error
-    res.status(500).send('Error retrieving branch data')
+async function handleGetOneBranch(req: Request, res: Response): Promise<void> {
+  const { branchNo } = req.body;
+
+  if (!branchNo) {
+    res.status(400).json({ message: 'Branch number is required' });
+    return;
   }
-})
 
-app.get('/branch/:branchNo', async (req, res) => {
-  const { branchNo } = req.params // Extract branchNo from the request URL
-
-  // Updated query to fetch all the branch details
-  const checkBranchQuery = `SELECT branchno, street, city, postcode FROM dh_branch WHERE branchno = :branchNo`
+  const checkBranchQuery = `SELECT branchno, street, city, postcode FROM dh_branch WHERE branchno = :branchNo`;
 
   try {
-    // Execute the query with the provided branchNo
-    const result = await executeQuery(checkBranchQuery, { branchNo })
+    const result = await executeQuery(checkBranchQuery, { branchNo });
 
     if (result.rows.length > 0) {
-      // If the branch exists, return a success response with all branch details
-      const [branch] = result.rows // Destructure the first row
+      const [branch] = result.rows;
 
       res.status(200).json({
         exists: true,
         branch: {
-          branch_no: branch[0], // Map to frontend naming: branch_no
-          street: branch[1], // street
-          city: branch[2], // city
-          postal_code: branch[3], // Map to frontend naming: postal_code
+          branch_no: branch[0],
+          street: branch[1],
+          city: branch[2],
+          postal_code: branch[3],
         },
-      })
+      });
     } else {
-      // If no matching branch is found, return a not-found response
       res.status(404).json({
         exists: false,
         message: 'Branch not found',
-      })
+      });
     }
-  } catch (error) {
-    console.error('Error fetching branch:', error.message)
-
-    // Return an internal server error if the query fails
+  } catch (error: any) {
+    console.error('Error fetching branch:', error.message);
     res.status(500).json({
       error: 'Internal Server Error',
       details: error.message,
-    })
+    });
   }
-})
+}
 
-app.post('/branch', async (req, res) => {
-  const {
-    branch_no, // Use branch_no to match the frontend and database naming
+async function handleCreateBranch(req: Request, res: Response): Promise<void> {
+  const { branch_no, street, city, postal_code } = req.body;
+
+  if (!branch_no || !street || !city || !postal_code) {
+    res.status(400).json({ message: 'All fields are required' });
+    return;
+  }
+
+  const newBranch = {
+    branchno: branch_no,
     street,
     city,
-    postal_code, // Use postal_code to match the frontend and database naming
-  } = req.body
-
-  // Validate input
-  if (!branch_no || !street || !city || !postal_code) {
-    return res.status(400).json({ message: 'All fields are required' })
-  }
-
-  // Map frontend keys to database fields
-  const newBranch = {
-    branchno: branch_no, // Map branch_no to branchno for Oracle
-    street: street,
-    city: city,
-    postcode: postal_code, // Map postal_code to postcode for Oracle
-  }
+    postcode: postal_code,
+  };
 
   try {
     // Check if branch already exists
-    const checkBranchQuery = `SELECT branchno FROM dh_branch WHERE branchno = :branchno`
-    const existingBranch = await executeQuery(checkBranchQuery, {
-      branchno: branch_no,
-    })
+    const checkBranchQuery = `SELECT branchno FROM dh_branch WHERE branchno = :branchno`;
+    const existingBranch = await executeQuery(checkBranchQuery, { branchno: branch_no });
 
-    if (existingBranch && existingBranch.length > 0) {
-      return res.status(409).json({ message: 'The branch already exists.' })
+    if (existingBranch && existingBranch.rows.length > 0) {
+      res.status(409).json({ message: 'The branch already exists.' });
+      return;
     }
 
-    // SQL query to insert a new branch
+    // Insert new branch
     const insertBranchQuery = `
-      INSERT INTO dh_branch (
-        branchno,
-        street,
-        city,
-        postcode
-      ) VALUES (
-        :branchno,
-        :street,
-        :city,
-        :postcode
-      )
-    `
+      INSERT INTO dh_branch (branchno, street, city, postcode)
+      VALUES (:branchno, :street, :city, :postcode)
+    `;
 
-    // Execute the query to insert the branch
-    await executeQuery(insertBranchQuery, newBranch)
+    await executeQuery(insertBranchQuery, newBranch);
 
     res.status(201).json({
       message: 'New branch created successfully.',
       branch: newBranch,
-    })
-  } catch (err) {
-    console.error('Error creating branch:', err)
+    });
+  } catch (err: any) {
+    console.error('Error creating branch:', err);
 
     if (err.message.includes('unique constraint')) {
-      return res.status(409).json({ message: 'Branch already exists.' })
+      res.status(409).json({ message: 'Branch already exists.' });
+      return;
     }
 
-    res
-      .status(500)
-      .json({ message: 'Internal Server Error', error: err.message })
+    res.status(500).json({ message: 'Internal Server Error', error: err.message });
   }
-})
+}
 
-app.put('/branch', async (req, res) => {
-  // Link the item to backend
-  // branchNo -- used in frontend
-  const { branchNo: branchno, street, city, postcode } = req.body
+async function handleUpdateBranch(req: Request, res: Response): Promise<void> {
+  const { branchNo: branchno, street, city, postcode } = req.body;
 
-  // Ensure branch number is provided
   if (!branchno) {
-    return res.status(400).send('Branch numbçr is required')
+    res.status(400).send('Branch number is required');
+    return;
   }
 
   try {
-    // Query to check if the branch exists in the database
-    const checkBranchQuery = `SELECT branchno FROM dh_branch WHERE branchno = :branchno`
-    console.log(`Executing check query: ${checkBranchQuery}`)
-    const checkResult = await executeQuery(checkBranchQuery, { branchno })
+    // Check if branch exists
+    const checkBranchQuery = `SELECT branchno FROM dh_branch WHERE branchno = :branchno`;
+    const checkResult = await executeQuery(checkBranchQuery, { branchno });
 
-    // If the branch doesn't exist, return a 404 error
-    if (checkResult.length === 0) {
-      return res.status(404).send(`Branch number ${branchno} not found`)
+    if (checkResult.rows.length === 0) {
+      res.status(404).send(`Branch number ${branchno} not found`);
+      return;
     }
 
-    // Log current values in the database before performing the update
-    const checkCurrentValuesQuery = `SELECT street, city, postcode FROM dh_branch WHERE branchno = :branchno`
-    console.log(`Executing current values query: ${checkCurrentValuesQuery}`)
-    const currentValuesResult = await executeQuery(checkCurrentValuesQuery, {
-      branchno,
-    })
-    console.log('Current values in database:', currentValuesResult)
-
-    // Log the values being passed for update
-    console.log('Current values to update:', {
-      branchno,
-      street,
-      city,
-      postcode,
-    })
-
-    // Query to update the branch data with safe conditional updates
+    // Update branch
     const updateQuery = `
       UPDATE dh_branch
       SET
@@ -441,143 +431,85 @@ app.put('/branch', async (req, res) => {
         city = COALESCE(NULLIF(:p_city, city), city),
         postcode = COALESCE(NULLIF(:p_postcode, postcode), postcode)
       WHERE branchno = :p_branchno
-    `
-    console.log(`Executing update query: ${updateQuery}`)
+    `;
 
-    // Pass the parameters for the update
     const updateResult = await executeQuery(updateQuery, {
       p_street: street,
       p_city: city,
       p_postcode: postcode,
       p_branchno: branchno,
-    })
+    });
 
-    // Log the result of the update
-    console.log('Update Result:', updateResult)
-
-    // Check if the update affected any rows
-    if (updateResult.rowsAffected > 0) {
-      return res.status(200).send('Branch updated successfully')
+    if (updateResult.rowsAffected && updateResult.rowsAffected > 0) {
+      res.status(200).send('Branch updated successfully');
     } else {
-      return res.status(500).send('Error updating branch')
+      res.status(500).send('Error updating branch');
     }
   } catch (err) {
-    console.error('Error updating branch:', err)
-    return res.status(500).send('Database error')
+    console.error('Error updating branch:', err);
+    res.status(500).send('Database error');
   }
-})
+}
 
-// GET method to retrieve all client records
-app.get('/client', async (req, res) => {
-  try {
-    const query =
-      'SELECT clientno, fname, lname, telno, email, preftype, maxrent FROM dh_client' // Ensure table name is correct
-    const result = await executeQuery(query)
+// ============================================================
+// CLIENT ENDPOINTS - POST ONLY
+// ============================================================
 
-    const columnNames = [
-      'client_id',
-      'first_name',
-      'last_name',
-      'telephone',
-      'email',
-      'prefer_type',
-      'max_rent',
-    ]
-
-    const jsonResult = result.rows.map((row) => {
-      return columnNames.reduce((obj, col, index) => {
-        obj[col] = row[index]
-        return obj
-      }, {})
-    })
-
-    res.json(jsonResult) // Sends the client data as JSON
-  } catch (err) {
-    console.error('Error retrieving client data:', err) // Log error details
-    res.status(500).send('Error retrieving client data')
-  }
-})
-
-app.put('/client', async (req, res) => {
-  const { clientno, fname, lname, telno, email, preftype, maxrent } = req.body
-
-  // Validate that clientno is provided
-  if (!clientno) {
-    return res.status(400).send('Client ID is required')
-  }
+app.post('/client', async (req: Request, res: Response) => {
+  const { action } = req.body;
 
   try {
-    // Query to check if the client exists in the database
-    const checkClientQuery = `SELECT clientno FROM dh_client WHERE clientno = :p_clientNo`
-
-    // Execute the query to check if the client exists
-    const checkResult = await executeQuery(checkClientQuery, {
-      p_clientNo: clientno,
-    })
-
-    // If no client is found
-    if (checkResult.length === 0) {
-      return res.status(404).send(`Client ID ${clientno} not found`)
+    switch (action) {
+      case 'getAll':
+        await handleGetAllClients(req, res);
+        break;
+      case 'create':
+        await handleCreateClient(req, res);
+        break;
+      case 'update':
+        await handleUpdateClient(req, res);
+        break;
+      default:
+        res.status(400).json({ message: 'Invalid action. Use: getAll, create, update' });
     }
-
-    // Query to update client information (fixed: removed BEGIN/END block)
-    // Remove update name to avoid null value
-    const updateQuery = `
-      UPDATE dh_client
-      SET
-        telno = :p_telno,
-        email = :p_email,
-        preftype = :p_preftype,
-        maxrent = :p_maxrent
-      WHERE clientno = :p_clientno
-    `
-
-    const binds = {
-      p_clientno: clientno,
-      p_fname: fname || '', // Use empty string if no first_name is provided
-      p_lname: lname || '',
-      p_telno: telno || '',
-      p_email: email || '',
-      p_preftype: preftype || '',
-      p_maxrent: maxrent || null, // Use null if no max_rent is provided
-    }
-
-    // Log query and binds for debugging
-    console.log('Executing query:', updateQuery)
-    console.log('With binds:', binds)
-
-    // Execute the query to update the client in the database
-    await executeQuery(updateQuery, binds)
-
-    // Return a success message
-    res.status(200).send('Client information updated successfully')
   } catch (err) {
-    console.error('Error updating client information:', err.message || err)
-    res.status(500).send('Error updating client information')
+    console.error('Error in client endpoint:', err);
+    res.status(500).json({ message: 'Internal server error' });
   }
-})
+});
 
-app.post('/client', async (req, res) => {
-  const {
-    clientNo, // Client number (required)
-    fname, // First name
-    lname, // Last name
-    telno, // Telephone number
-    street, // Street address
-    city, // City
-    email, // Email address
-    preftype, // Preferred type (e.g., House or Flat)
-    maxrent, // Maximum rent
-  } = req.body
+async function handleGetAllClients(req: Request, res: Response): Promise<void> {
+  const query = 'SELECT clientno, fname, lname, telno, email, preftype, maxrent FROM dh_client';
+  const result = await executeQuery(query);
 
-  // Validate input
+  const columnNames: (keyof ClientRecord)[] = [
+    'client_id',
+    'first_name',
+    'last_name',
+    'telephone',
+    'email',
+    'prefer_type',
+    'max_rent',
+  ];
+
+  const jsonResult: ClientRecord[] = result.rows.map((row: any[]) => {
+    return columnNames.reduce((obj: any, col, index) => {
+      obj[col] = row[index];
+      return obj;
+    }, {} as ClientRecord);
+  });
+
+  res.json(jsonResult);
+}
+
+async function handleCreateClient(req: Request, res: Response): Promise<void> {
+  const { clientNo, fname, lname, telno, street, city, email, preftype, maxrent } = req.body;
+
   if (!clientNo) {
-    return res
-      .status(400)
-      .send('Client number is required to identify the client')
+    res.status(400).send('Client number is required to identify the client');
+    return;
   }
 
-  // Prepare the client data to be inserted
   const newClient = {
     clientno: clientNo,
     fname,
@@ -588,44 +520,86 @@ app.post('/client', async (req, res) => {
     email,
     preftype,
     maxrent,
-  }
+  };
 
   try {
-    // SQL query to insert a new client into the dh_client table
     const query = `
       INSERT INTO dh_client (clientno, fname, lname, telno, street, city, email, preftype, maxrent)
       VALUES (:clientno, :fname, :lname, :telno, :street, :city, :email, :preftype, :maxrent)
-    `
+    `;
 
-    // Bind the values to the placeholders in the SQL query
     const binds = {
       clientno: clientNo,
-      fname: fname,
-      lname: lname,
-      telno: telno || null, // If telno is missing, send null
-      street: street || null, // If street is missing, send null
-      city: city || null, // If city is missing, send null
-      email: email || null, // If email is missing, send null
-      preftype: preftype || null, // If preftype is missing, send null
-      maxrent: maxrent || null, // If maxrent is missing, send null
-    }
+      fname: fname || null,
+      lname: lname || null,
+      telno: telno || null,
+      street: street || null,
+      city: city || null,
+      email: email || null,
+      preftype: preftype || null,
+      maxrent: maxrent || null,
+    };
 
-    // Execute the query to insert the new client
-    await executeQuery(query, binds)
+    await executeQuery(query, binds);
 
-    // Return success message
     res.status(201).json({
       message: 'Client inserted successfully into dh_client',
       client: newClient,
-    })
-  } catch (err) {
-    console.error('Error inserting client:', err)
-    res.status(500).send(`Error inserting client: ${err.message}`)
+    });
+  } catch (err: any) {
+    console.error('Error inserting client:', err);
+    res.status(500).send(`Error inserting client: ${err.message}`);
   }
-})
+}
+
+async function handleUpdateClient(req: Request, res: Response): Promise<void> {
+  const { clientno, fname, lname, telno, email, preftype, maxrent } = req.body;
+
+  if (!clientno) {
+    res.status(400).send('Client ID is required');
+    return;
+  }
+
+  try {
+    // Check if client exists
+    const checkClientQuery = `SELECT clientno FROM dh_client WHERE clientno = :p_clientNo`;
+    const checkResult = await executeQuery(checkClientQuery, { p_clientNo: clientno });
+
+    if (checkResult.rows.length === 0) {
+      res.status(404).send(`Client ID ${clientno} not found`);
+      return;
+    }
+
+    // Update client
+    const updateQuery = `
+      UPDATE dh_client
+      SET
+        telno = :p_telno,
+        email = :p_email,
+        preftype = :p_preftype,
+        maxrent = :p_maxrent
+      WHERE clientno = :p_clientno
+    `;
+
+    const binds = {
+      p_clientno: clientno,
+      p_telno: telno || '',
+      p_email: email || '',
+      p_preftype: preftype || '',
+      p_maxrent: maxrent || null,
+    };
+
+    await executeQuery(updateQuery, binds);
+
+    res.status(200).send('Client information updated successfully');
+  } catch (err: any) {
+    console.error('Error updating client information:', err.message || err);
+    res.status(500).send('Error updating client information');
+  }
+}
 
 // Start the Express server
 app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`)
-  populateStaffHashMap() // Populate the hash-map at startup
-})
+  console.log(`Server is running on http://localhost:${port}`);
+  populateStaffHashMap();
+});

@@ -3,9 +3,11 @@
   "version": "1.0.0",
   "description": "",
   "main": "app.js",
+  "type": "module",
   "scripts": {
-    "start": "node app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "env-cmd -f ../realEstate.env tsx src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "staffs": "env-cmd -f ../realEstate.env tsx test/getStaffs.ts"
   },
   "keywords": [],
   "author": "",
@@ -13,18 +15,30 @@
   "dependencies": {
     "@azure/cosmos": "^4.9.0",
     "@eslint/js": "^9.39.2",
+    "axios": "^1.13.2",
+    "compression": "^1.8.1",
     "cors": "^2.8.5",
     "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "jwk-to-pem": "^2.0.7",
+    "lru-cache": "^11.2.4",
+    "winston": "^3.19.0",
     "zod": "^4.2.1"
   },
   "devDependencies": {
+    "@types/compression": "^1.8.1",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/jwk-to-pem": "^2.0.3",
     "@types/node": "^25.0.3",
     "@typescript-eslint/eslint-plugin": "^8.51.0",
     "@typescript-eslint/parser": "^8.51.0",
+    "env-cmd": "^11.0.0",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
     "prettier": "^3.7.4",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   }
 }

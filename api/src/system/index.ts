@@ -8,7 +8,7 @@ export const getEnvVariableOrThrow = (envName: string): string => {
   }
 };
 
-export const getDefaultValue = (
+export const getEnvVariable = (
   envName: string,
   defaultValue: string
 ): string => {
