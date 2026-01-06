@@ -14,11 +14,11 @@
 
 export const msalConfig = {
   auth: {
-    clientId: process.env.NEXT_PUBLIC_AZURE_AD_CLIENT_ID || '', // Your B2C application's client ID
-    authority: `https://${process.env.NEXT_PUBLIC_AZURE_AD_TENANT_NAME}.b2clogin.com/${process.env.NEXT_PUBLIC_AZURE_AD_TENANT_NAME}.onmicrosoft.com/${process.env.NEXT_PUBLIC_AZURE_AD_POLICY}`,
-    knownAuthorities: [`${process.env.NEXT_PUBLIC_AZURE_AD_TENANT_NAME}.b2clogin.com`],
-    redirectUri: process.env.NEXT_PUBLIC_AZURE_AD_REDIRECT_URI || 'http://localhost:3000',
-    postLogoutRedirectUri: process.env.NEXT_PUBLIC_AZURE_AD_REDIRECT_URI || 'http://localhost:3000',
+    clientId: process.env.AZURE_AD_CLIENT_ID || '', // Your B2C application's client ID
+    authority: `${process.env.AUTHORITY}`,
+    knownAuthorities: [`${process.env.KNOWN_AUTHORITIES}`],
+    redirectUri: process.env.REDIRECT_URI || 'http://localhost:3000',
+    postLogoutRedirectUri: process.env.REDIRECT_URI || 'http://localhost:3000',
   },
   cache: {
     cacheLocation: 'sessionStorage', // This configures where your cache will be stored

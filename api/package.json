@@ -5,7 +5,7 @@
   "main": "app.js",
   "type": "module",
   "scripts": {
-    "start": "env-cmd -f ../realEstate.env tsx src/index.ts",
+    "start": "env-cmd -f ./realEstate.env tsx src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "staffs": "env-cmd -f ../realEstate.env tsx test/getStaffs.ts"
   },
