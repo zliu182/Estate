@@ -12,6 +12,13 @@ export type IRouteMethod<S extends BaseReq, R extends BaseRes> = {
   process: (props: S) => Promise<R>;
 };
 
+export type FormatErrorResultsType = {
+  message: string;
+  stack: string | undefined;
+  cause: any;
+  [key: string]: any;
+};
+
 export const StaffSchema = z.object({
   branchno: z.string(),
   staffno: z.string(),
