@@ -4,6 +4,7 @@ import localFont from "next/font/local";
 import styles from "@/styles/Home.module.css";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
+import AuthButton from "@/components/AuthButton";
 
 export default function Home() {
   const [screenSize, setScreenSize] = useState({
@@ -61,6 +62,16 @@ export default function Home() {
           backgroundColor: "white",
         }}
       >
+        <div
+          style={{
+            position: "absolute",
+            top: 20,
+            right: 20,
+            zIndex: 1000,
+          }}
+        >
+          <AuthButton />
+        </div>
         <div
           style={{
             position: "absolute",
