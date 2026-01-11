@@ -1,6 +1,9 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import Spreadsheet, { DataViewer } from "react-spreadsheet";
+import { useIsAuthenticated, useMsal } from '@azure/msal-react';
+import { apiPost } from "@/utils/apiClient";
+import { useAccessToken } from "@/hooks/useAccessToken";
 
 const column = {
   STAFFNO: 0,
@@ -17,35 +20,51 @@ export default function StaffPage() {
   const [employeeNumSelected, setEmployeeNumSelected] = useState("N/A");
   const [userData, setUserData] = useState("");
   const [updatedData, setUpdatedData] = useState(new Map());
+  const {getAccessToken } = useAccessToken()
 
   useEffect(() => {
+    const fetchData = async() => {
+      try {
+        const accessToken = await getAccessToken()
+        const responseData = await apiPost('/getStaffs', {}, accessToken);
+        console.log(JSON.stringify(responseData))
+      } catch (err) {
+        console.error(err)
+      }
+    }
+
+    fetchData()
     // Change the ports to fetch data from dh_staff
-    fetch("https://dbs501-backend.onrender.com/staff", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        const formattedData = data.map((item) => {
-          const itemData = [
-            { value: item.staff_id, readOnly: true },
-            { value: item.first_name, readOnly: true },
-            { value: item.last_name, readOnly: true },
-            { value: item.position, type: "dropdown", readOnly: true },
-            { value: item.salary.toString() },
-            { value: item.mobile_number },
-            { value: item.email },
-          ];
-          return itemData;
-        });
-        setData(formattedData);
-      })
-      .catch((err) => {
-        console.error(err);
-      });
-    setReset(false);
+    // fetch("https://dbs501-backend.onrender.com/staff", {
+    //   method: "GET",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //   },
+    // })
+    //   .then((res) => res.json())
+    //   .then((data) => {
+    //     const formattedData = data.map((item) => {
+    //       const itemData = [
+    //         { value: item.staff_id, readOnly: true },
+    //         { value: item.first_name, readOnly: true },
+    //         { value: item.last_name, readOnly: true },
+    //         { value: item.position, type: "dropdown", readOnly: true },
+    //         { value: item.salary.toString() },
+    //         { value: item.mobile_number },
+    //         { value: item.email },
+    //       ];
+    //       return itemData;
+    //     });
+    //     setData(formattedData);
+    //   })
+    //   .catch((err) => {
+    //     console.error(err);
+    //   });
+    // setReset(false);
+
+    const {getAccessToken} = useAccessToken
+
+    apiPost('/getStaffs', {}, useAccessToken())
   }, [reset]);
 
   const router = useRouter();
@@ -206,29 +225,30 @@ export default function StaffPage() {
   };
 
   const handleSave = async () => {
+    console.log('handle-save')
     // Send API of updatedData
-    for (const data of updatedData.values()) {
-      try {
-        const response = await fetch(`https://dbs501-backend.onrender.com/staff`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(data),
-        });
+    // for (const data of updatedData.values()) {
+    //   try {
+    //     const response = await fetch(`https://dbs501-backend.onrender.com/staff`, {
+    //       method: "PUT",
+    //       headers: {
+    //         "Content-Type": "application/json",
+    //       },
+    //       body: JSON.stringify(data),
+    //     });
 
-        if (!response.ok) {
-          // Handle non-2xx HTTP status codes
-          const errorData = await response.json();
-          console.error("Response error:", errorData);
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
+    //     if (!response.ok) {
+    //       // Handle non-2xx HTTP status codes
+    //       const errorData = await response.json();
+    //       console.error("Response error:", errorData);
+    //       throw new Error(`HTTP error! status: ${response.status}`);
+    //     }
 
-        console.log("Update complete");
-      } catch (error) {
-        console.error("Error updating staff:", error);
-      }
-    }
+    //     console.log("Update complete");
+    //   } catch (error) {
+    //     console.error("Error updating staff:", error);
+    //   }
+    // }
   };
 
   return (

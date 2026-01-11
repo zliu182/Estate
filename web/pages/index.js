@@ -1,7 +1,5 @@
 import Head from "next/head";
 import Image from "next/image";
-import localFont from "next/font/local";
-import styles from "@/styles/Home.module.css";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import AuthButton from "@/components/AuthButton";
@@ -37,13 +35,13 @@ export default function Home() {
     router.push("./staff");
   };
 
-  const handleBranchMenu = () =>{
-    router.push("./branch")
-  }
+  const handleBranchMenu = () => {
+    router.push("./branch");
+  };
 
-  const handleClientMenu = () =>{
-    router.push("./client")
-  }
+  const handleClientMenu = () => {
+    router.push("./client");
+  };
 
   return (
     <>
@@ -75,18 +73,14 @@ export default function Home() {
         <div
           style={{
             position: "absolute",
-
           }}
         >
           <Image
             src="/main-page.jpg"
-            style={{ opacity: 0.7,
-                position:"sticky",
-                top:0
-             }}
-             draggable="false"
-             width= {screenSize.width * 0.8}
-             height={screenSize.height} 
+            style={{ opacity: 0.7, position: "sticky", top: 0 }}
+            draggable="false"
+            width={screenSize.width * 0.8}
+            height={screenSize.height}
           />
         </div>
 
@@ -105,8 +99,8 @@ export default function Home() {
               textAlign: "center",
               padding: 10,
               color: "white",
-              borderTopLeftRadius:10,
-              borderBottomLeftRadius:10,
+              borderTopLeftRadius: 10,
+              borderBottomLeftRadius: 10,
               cursor: "pointer",
             }}
             onClick={handleStaffMenu}
@@ -123,7 +117,6 @@ export default function Home() {
               cursor: "pointer",
             }}
             onClick={handleBranchMenu}
-
           >
             <h3>Branch Main Menu</h3>
           </button>
@@ -139,7 +132,6 @@ export default function Home() {
               cursor: "pointer",
             }}
             onClick={handleClientMenu}
-
           >
             <h3>Client Main Menu</h3>
           </button>

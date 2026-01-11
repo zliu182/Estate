@@ -5,7 +5,7 @@
  * Automatically includes the Bearer token in the Authorization header.
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dbs501-backend.onrender.com';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
 /**
  * Makes an authenticated API request
@@ -19,13 +19,13 @@ export async function apiRequest(endpoint, options = {}, accessToken) {
   const url = `${API_BASE_URL}${endpoint}`;
 
   const headers = {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
     ...options.headers,
   };
 
   // Add Authorization header if access token is provided
   if (accessToken) {
-    headers['Authorization'] = `Bearer ${accessToken}`;
+    headers["Authorization"] = `Bearer ${accessToken}`;
   }
 
   const config = {
@@ -43,7 +43,7 @@ export async function apiRequest(endpoint, options = {}, accessToken) {
 
     return await response.json();
   } catch (error) {
-    console.error('API request failed:', error);
+    console.error("API request failed:", error);
     throw error;
   }
 }
@@ -52,7 +52,7 @@ export async function apiRequest(endpoint, options = {}, accessToken) {
  * GET request helper
  */
 export async function apiGet(endpoint, accessToken) {
-  return apiRequest(endpoint, { method: 'GET' }, accessToken);
+  return apiRequest(endpoint, { method: "GET" }, accessToken);
 }
 
 /**
@@ -62,7 +62,7 @@ export async function apiPost(endpoint, data, accessToken) {
   return apiRequest(
     endpoint,
     {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(data),
     },
     accessToken
@@ -76,7 +76,7 @@ export async function apiPut(endpoint, data, accessToken) {
   return apiRequest(
     endpoint,
     {
-      method: 'PUT',
+      method: "PUT",
       body: JSON.stringify(data),
     },
     accessToken
@@ -87,5 +87,5 @@ export async function apiPut(endpoint, data, accessToken) {
  * DELETE request helper
  */
 export async function apiDelete(endpoint, accessToken) {
-  return apiRequest(endpoint, { method: 'DELETE' }, accessToken);
+  return apiRequest(endpoint, { method: "DELETE" }, accessToken);
 }
