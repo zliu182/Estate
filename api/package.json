@@ -5,7 +5,7 @@
   "main": "app.js",
   "type": "module",
   "scripts": {
-    "start": "env-cmd -f ../realEstate.env tsx src/index.ts",
+    "start": "env-cmd -f ./realEstate.env tsx src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "staffs": "env-cmd -f ../realEstate.env tsx test/getStaffs.ts"
   },
@@ -21,6 +21,7 @@
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "jwk-to-pem": "^2.0.7",
+    "logform": "^2.7.0",
     "lru-cache": "^11.2.4",
     "winston": "^3.19.0",
     "zod": "^4.2.1"
