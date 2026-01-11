@@ -14,14 +14,15 @@
 
 export const msalConfig = {
   auth: {
-    clientId: process.env.AZURE_AD_CLIENT_ID || '', // Your B2C application's client ID
-    authority: `${process.env.AUTHORITY}`,
-    knownAuthorities: [`${process.env.KNOWN_AUTHORITIES}`],
-    redirectUri: process.env.REDIRECT_URI || 'http://localhost:3000',
-    postLogoutRedirectUri: process.env.REDIRECT_URI || 'http://localhost:3000',
+    clientId: process.env.NEXT_PUBLIC_AZURE_AD_CLIENT_ID,
+    authority: process.env.NEXT_PUBLIC_AUTHORITY,
+    knownAuthorities: [process.env.NEXT_PUBLIC_KNOWN_AUTHORITIES], // MSAL expects an array
+    redirectUri: process.env.NEXT_PUBLIC_REDIRECT_URI,
+    postLogoutRedirectUri:
+      process.env.NEXT_PUBLIC_REDIRECT_URI || "http://localhost:3000",
   },
   cache: {
-    cacheLocation: 'sessionStorage', // This configures where your cache will be stored
+    cacheLocation: "sessionStorage", // This configures where your cache will be stored
     storeAuthStateInCookie: false, // Set to true for IE 11 or Edge
   },
 };
@@ -31,7 +32,7 @@ export const msalConfig = {
  * By default, MSAL.js will add OIDC scopes (openid, profile, email) to any login request.
  */
 export const loginRequest = {
-  scopes: ['openid', 'profile', 'offline_access'],
+  scopes: ["openid", "profile", "offline_access"],
 };
 
 /**
@@ -39,6 +40,6 @@ export const loginRequest = {
  */
 export const tokenRequest = {
   scopes: [
-    `https://${process.env.NEXT_PUBLIC_AZURE_AD_TENANT_NAME}.onmicrosoft.com/${process.env.NEXT_PUBLIC_AZURE_AD_CLIENT_ID}/access_as_user`,
+    ``,
   ],
 };
