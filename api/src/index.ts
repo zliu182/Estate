@@ -10,7 +10,7 @@ import {
 
 const app = express();
 app.disabled("x-powered-by");
-const port = process.env.PORT || 4000;
+const port = process.env.PORT || 3001;
 
 const version = process.env.VERSION || "No set";
 

@@ -24,6 +24,7 @@ const setupAsyncStorage = (req: Request, res: Response, next: NextFunction) => {
       "x-appgw-trace-id": req.headers["x-appgw-trace-id"],
       "user-agent": req.headers["uder-agent"],
     };
+    console.log(traceHeaders)
     const tRequest: ExecContext = {
       execId: id,
       context: {
@@ -39,14 +40,36 @@ const setupAsyncStorage = (req: Request, res: Response, next: NextFunction) => {
 
 export const registerCORSHeaders = async (app: Express) => {
   app.use(function (req: Request, res: Response, next: NextFunction) {
+    // 1. Set the Allowed Origin
     res.setHeader(
       "Access-Control-Allow-Origin",
-      getEnvVariableOrThrow("APPLICATION_ORIGIN")
+      getEnvVariableOrThrow("APPLICATION_ORIGIN") // e.g., http://localhost:3000
     );
+
+    // 2. Allow specific HTTP methods
+    res.setHeader(
+      "Access-Control-Allow-Methods",
+      "GET, POST, PUT, DELETE, OPTIONS"
+    );
+
+    // 3. Allow specific headers (Authorization is required for your Bearer token)
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization"
+    );
+
+    // 4. Allow credentials (if you need cookies or auth headers)
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+
+    // 5. Handle the Preflight (OPTIONS) request immediately
+    if (req.method === "OPTIONS") {
+      res.sendStatus(200);
+      return;
+    }
+
     next();
   });
 };
-
 export const registerErrorHandler = async (app: Express) => {
   app.use(
     async (error: Error, req: Request, res: Response, next: NextFunction) => {

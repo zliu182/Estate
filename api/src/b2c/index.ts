@@ -1,10 +1,11 @@
 import axios from "axios";
 import jwkToPem, { RSA } from "jwk-to-pem"; // Import JWK type
 import { logInfo } from "../log/logger";
-import jsonwebtoken from "jsonwebtoken";
+import jsonwebtoken, { JwtPayload } from "jsonwebtoken";
 import express, { RequestHandler } from "express";
 import { LRUCache } from "lru-cache";
 import { getEnvVariable } from "../system/index.js";
+import { getContext } from "../asyncLocalStorage";
 
 export interface JWTAuthOptions {
   keysURL: string;
@@ -115,6 +116,34 @@ export const JWTAuth = (jwtOptions: JWTAuthOptions): RequestHandler => {
           jwtOptions.keysURL,
           jwtToken?.header.kid!
         );
+        try {
+          if (!b2cPEM) {
+            next({
+              name: "Unauthorized",
+              message: "Unable to load the pem for JWT",
+            });
+          } else {
+            jsonwebtoken.verify(token, b2cPEM.pem!, {
+              algorithms: ["RS256"],
+              audience: jwtOptions.audience,
+              issuer: jwtOptions.issuer,
+              clockTolerance: 5,
+            });
+            const ctx = getContext();
+            const jwtPayload = jwtToken!.payload as JwtPayload;
+            ctx.mspPrincipalId =
+              jwtPayload["oid"] || (jwtPayload.sub as string);
+            ctx.mspUserName = jwtPayload["name"];
+            next();
+          }
+        } catch (e) {
+          next({
+            name: "Unauthorized",
+            message: "JWT verification failed",
+            stack: e,
+            jwt: jwtToken!.payload,
+          });
+        }
       }
     } catch (error) {
       next({
